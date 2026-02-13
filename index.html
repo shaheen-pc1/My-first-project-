@@ -1,2 +1,218 @@
-# My-first-project-
-I am programer 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Clinic Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans">
+
+    <nav class="bg-blue-700 text-white p-4 shadow-lg mb-6">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">🏥 Clinic Patient Portal</h1>
+            <div id="liveClock" class="text-sm opacity-80"></div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 pb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-1">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-semibold mb-4 text-slate-700 border-b pb-2">Patient Entry</h2>
+                    <form id="pForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase">Patient Name</label>
+                            <input type="text" id="name" class="w-full border-slate-200 border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Optional">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Gender</label>
+                                <select id="gender" class="w-full border-slate-200 border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Age Group</label>
+                                <select id="age" class="w-full border-slate-200 border rounded-lg p-2 mt-1">
+                                    <option>Infant (0-2)</option>
+                                    <option>Child (3-12)</option>
+                                    <option>Teen (13-19)</option>
+                                    <option selected>Adult (20-59)</option>
+                                    <option>Senior (60+)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase">Category</label>
+                            <select id="cat" onchange="loadDiseases()" class="w-full border-slate-200 border rounded-lg p-2 mt-1 bg-blue-50">
+                                <option value="">Select Category</option>
+                                <option>Respiratory Infections</option>
+                                <option>Skin Infections</option>
+                                <option>Gastro Intestinal</option>
+                                <option>ENT</option>
+                                <option>Eye</option>
+                                <option>Cardiovascular</option>
+                                <option>Endocrine</option>
+                                <option>Psychiatry</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase">Specific Disease</label>
+                            <select id="dis" class="w-full border-slate-200 border rounded-lg p-2 mt-1" disabled>
+                                <option>Select Category First</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-800 shadow-md transform transition active:scale-95">Save Patient</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Total Today</p>
+                        <h3 id="statTotal" class="text-2xl font-black text-slate-800">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-pink-500">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Male/Female</p>
+                        <h3 id="statMF" class="text-xl font-black text-slate-800">0/0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Top Disease</p>
+                        <h3 id="statTop" class="text-sm font-bold text-slate-800 truncate">-</h3>
+                    </div>
+                    <button onclick="exportToExcel()" class="bg-emerald-600 text-white p-4 rounded-xl shadow-md hover:bg-emerald-700 flex flex-col items-center justify-center">
+                        <span class="text-xs font-bold">Download</span>
+                        <span class="text-sm font-black italic underline">Excel Report</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 bg-slate-50 border-b flex justify-between">
+                        <h3 class="font-bold text-slate-700">Recent Entries (Today)</h3>
+                        <button onclick="resetData()" class="text-xs text-red-500 hover:underline">Clear Records</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-100 text-slate-600">
+                                <tr>
+                                    <th class="p-3">Name</th>
+                                    <th class="p-3">Gender</th>
+                                    <th class="p-3">Age</th>
+                                    <th class="p-3">Disease</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTable">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const diseaseMap = {
+            "Respiratory Infections": ["TB", "Pneumonia", "Asthma", "COPD", "Flu"],
+            "Skin Infections": ["Scabies", "Fungal", "Eczema", "Abscess"],
+            "Gastro Intestinal": ["Diarrhea", "Gastritis", "Typhoid", "IBS"],
+            "ENT": ["Otitis", "Tonsillitis", "Sinusitis"],
+            "Eye": ["Conjunctivitis", "Glaucoma", "Cataract"],
+            "Cardiovascular": ["HTN (Hypertension)", "Angina", "Heart Failure"],
+            "Endocrine": ["Diabetes Type 1", "Diabetes Type 2", "Goiter"],
+            "Psychiatry": ["Anxiety", "Depression", "Bipolar"]
+        };
+
+        let records = JSON.parse(localStorage.getItem('clinic_db')) || [];
+
+        function loadDiseases() {
+            const cat = document.getElementById('cat').value;
+            const disEl = document.getElementById('dis');
+            disEl.innerHTML = '';
+            if (cat) {
+                disEl.disabled = false;
+                diseaseMap[cat].forEach(d => {
+                    let opt = document.createElement('option');
+                    opt.value = d; opt.innerText = d;
+                    disEl.appendChild(opt);
+                });
+            } else {
+                disEl.disabled = true;
+                disEl.innerHTML = '<option>Select Category First</option>';
+            }
+        }
+
+        document.getElementById('pForm').onsubmit = (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value || "Walk-in",
+                gender: document.getElementById('gender').value,
+                age: document.getElementById('age').value,
+                category: document.getElementById('cat').value,
+                disease: document.getElementById('dis').value,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString()
+            };
+            records.push(data);
+            localStorage.setItem('clinic_db', JSON.stringify(records));
+            e.target.reset();
+            loadDiseases();
+            updateUI();
+        };
+
+        function updateUI() {
+            const today = new Date().toLocaleDateString();
+            const todayRecords = records.filter(r => r.date === today);
+            
+            document.getElementById('statTotal').innerText = todayRecords.length;
+            const males = todayRecords.filter(r => r.gender === 'Male').length;
+            const females = todayRecords.filter(r => r.gender === 'Female').length;
+            document.getElementById('statMF').innerText = `${males}/${females}`;
+
+            // Get Top Disease
+            const counts = {};
+            todayRecords.forEach(r => counts[r.disease] = (counts[r.disease] || 0) + 1);
+            const top = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, "-");
+            document.getElementById('statTop').innerText = top;
+
+            // Table update
+            const table = document.getElementById('recentTable');
+            table.innerHTML = todayRecords.reverse().slice(0, 5).map(r => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50">
+                    <td class="p-3 font-medium">${r.name}</td>
+                    <td class="p-3">${r.gender}</td>
+                    <td class="p-3 text-xs text-slate-500">${r.age}</td>
+                    <td class="p-3 font-bold text-blue-600">${r.disease}</td>
+                </tr>
+            `).join('');
+        }
+
+        function exportToExcel() {
+            const ws = XLSX.utils.json_to_sheet(records);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Patients");
+            XLSX.writeFile(wb, `Clinic_Report_${new Date().toLocaleDateString()}.xlsx`);
+        }
+
+        function resetData() {
+            if(confirm("Are you sure? This will delete all saved records.")) {
+                localStorage.removeItem('clinic_db');
+                records = [];
+                updateUI();
+            }
+        }
+
+        setInterval(() => {
+            document.getElementById('liveClock').innerText = new Date().toLocaleString();
+        }, 1000);
+
+        updateUI();
+    </script>
+</body>
+  </html>
+  
